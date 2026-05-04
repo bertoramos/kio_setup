@@ -1,5 +1,5 @@
 // Service Worker minimalista con cache precarga + estrategia "cache first, red de respaldo".
-const CACHE = 'kio-setup-v10';
+const CACHE = 'kio-setup-v12';
 const ASSETS = [
   './',
   './index.html',
@@ -9,7 +9,11 @@ const ASSETS = [
   './ble.js',
   './manifest.webmanifest',
   './icons/icon.svg',
-  './icons/icon-maskable.svg'
+  './icons/icon-maskable.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-192-maskable.png',
+  './icons/icon-512-maskable.png'
 ];
 
 self.addEventListener('install', (event) => {
