@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0ea5e9" />
+  <title>Mi PWA</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+  <link rel="apple-touch-icon" href="icons/icon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Hola, mundo 👋</h1>
+      <p class="subtitle">Plantilla mínima de PWA instalable en Android.</p>
+    </header>
+
+    <section class="card">
+      <h2>Estado</h2>
+      <ul id="status" class="status-list">
+        <li><span>Service Worker:</span> <strong id="sw-status">comprobando…</strong></li>
+        <li><span>Conexión:</span> <strong id="net-status">—</strong></li>
+        <li><span>Modo visualización:</span> <strong id="display-mode">—</strong></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Instalar</h2>
+      <p>En Chrome para Android: menú ⋮ → <em>Instalar app</em>. Si tu navegador lo soporta, aparecerá el botón:</p>
+      <button id="install-btn" class="btn" hidden>Instalar app</button>
+      <p id="install-hint" class="hint"></p>
+    </section>
+
+    <section class="card">
+      <h2>Contador demo</h2>
+      <div class="counter">
+        <button class="btn btn-ghost" id="dec">−</button>
+        <span id="count">0</span>
+        <button class="btn btn-ghost" id="inc">+</button>
+      </div>
+    </section>
+
+    <footer>
+      <small>Hecho con HTML + JS vanilla</small>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
