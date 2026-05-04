@@ -28,17 +28,33 @@ let deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  installBtn.hidden = false;
 });
 
+function showManualInstallHelp() {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid = /Android/.test(ua);
+  let msg;
+  if (isIOS) {
+    msg = 'En iPhone/iPad:\n\n1. Abre esta web en Safari.\n2. Pulsa el botón Compartir (cuadrado con flecha).\n3. Elige "Añadir a pantalla de inicio".';
+  } else if (isAndroid) {
+    msg = 'En Android:\n\n1. Usa Chrome sobre HTTPS.\n2. Menú ⋮ → "Instalar aplicación" o "Añadir a pantalla principal".\n\nSi no aparece la opción, recarga la página y espera unos segundos. Algunos navegadores requieren iconos PNG.';
+  } else {
+    msg = 'En escritorio (Chrome/Edge):\n\n1. Busca el icono de instalación (⊕) a la derecha de la barra de URL.\n2. O menú ⋮ → "Instalar Kio Setup…".';
+  }
+  alert(msg);
+}
+
 installBtn.addEventListener('click', async () => {
-  if (!deferredInstallPrompt) return;
-  installBtn.disabled = true;
-  deferredInstallPrompt.prompt();
-  try { await deferredInstallPrompt.userChoice; } catch {}
-  deferredInstallPrompt = null;
-  installBtn.hidden = true;
-  installBtn.disabled = false;
+  if (deferredInstallPrompt) {
+    installBtn.disabled = true;
+    deferredInstallPrompt.prompt();
+    try { await deferredInstallPrompt.userChoice; } catch {}
+    deferredInstallPrompt = null;
+    installBtn.disabled = false;
+    return;
+  }
+  showManualInstallHelp();
 });
 
 window.addEventListener('appinstalled', () => {
@@ -218,7 +234,43 @@ function updateBulkBar() {
   const n = state.selected.size;
   bulkBar.hidden = n === 0;
   bulkCountEl.textContent = `${n} seleccionado${n === 1 ? '' : 's'}`;
+  updateSelectAllLabel();
 }
+
+// Lista actualmente visible (respetando el filtro de búsqueda).
+function visibleDevices() {
+  const q = state.filter;
+  return state.devices.filter((d) => {
+    if (!q) return true;
+    const hay = `${d.name || ''} ${d.uniqueId || ''} ${d.mac || ''}`.toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+const toggleSelectAllBtn = document.getElementById('toggle-select-all');
+function updateSelectAllLabel() {
+  const vis = visibleDevices();
+  if (!vis.length) {
+    toggleSelectAllBtn.textContent = 'Seleccionar todos';
+    toggleSelectAllBtn.disabled = true;
+    return;
+  }
+  toggleSelectAllBtn.disabled = false;
+  const allSelected = vis.every((d) => state.selected.has(d.uniqueId));
+  toggleSelectAllBtn.textContent = allSelected ? 'Deseleccionar' : 'Seleccionar todos';
+}
+toggleSelectAllBtn.addEventListener('click', () => {
+  const vis = visibleDevices();
+  if (!vis.length) return;
+  const allSelected = vis.every((d) => state.selected.has(d.uniqueId));
+  if (allSelected) {
+    vis.forEach((d) => state.selected.delete(d.uniqueId));
+  } else {
+    vis.forEach((d) => state.selected.add(d.uniqueId));
+  }
+  renderDevices();
+  updateBulkBar();
+});
 
 // ======= Config modal =======
 const modal = document.getElementById('config-modal');
