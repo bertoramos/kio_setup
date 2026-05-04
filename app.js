@@ -21,6 +21,36 @@ updateNet();
 window.addEventListener('online', updateNet);
 window.addEventListener('offline', updateNet);
 
+// ======= Install PWA =======
+const installBtn = document.getElementById('install-btn');
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  installBtn.hidden = false;
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  installBtn.disabled = true;
+  deferredInstallPrompt.prompt();
+  try { await deferredInstallPrompt.userChoice; } catch {}
+  deferredInstallPrompt = null;
+  installBtn.hidden = true;
+  installBtn.disabled = false;
+});
+
+window.addEventListener('appinstalled', () => {
+  installBtn.hidden = true;
+  deferredInstallPrompt = null;
+});
+
+// Si ya está instalada (modo standalone), oculta el botón.
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  installBtn.hidden = true;
+}
+
 // ======= Tabs =======
 const tabs = document.querySelectorAll('.tab');
 const panels = document.querySelectorAll('.tab-panel');
