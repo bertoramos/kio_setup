@@ -1,10 +1,14 @@
 :root {
   --bg: #0b1220;
   --surface: #111a2e;
+  --surface-2: #0f172a;
   --text: #e6edf7;
   --muted: #94a3b8;
   --primary: #0ea5e9;
   --primary-600: #0284c7;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --warning: #f59e0b;
   --border: #1f2a44;
   --radius: 14px;
 }
@@ -119,4 +123,231 @@ footer {
   text-align: center;
   color: var(--muted);
   margin-top: 12px;
+}
+footer a { color: var(--primary); }
+
+.muted { color: var(--muted); font-size: .9rem; }
+code { background: var(--surface-2); padding: 1px 6px; border-radius: 6px; font-size: .9em; }
+
+.app-header { margin-bottom: 12px; }
+
+/* ---------------- Tabs ---------------- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+  position: sticky;
+  top: env(safe-area-inset-top);
+  z-index: 10;
+}
+.tab {
+  flex: 1;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  padding: 10px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: .95rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+.tab[aria-selected="true"] {
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.tab-panel { animation: fade .15s ease; }
+@keyframes fade { from { opacity: .4; } to { opacity: 1; } }
+
+/* ---------------- Form controls ---------------- */
+.field { display: block; margin-bottom: 14px; }
+.field > span { display: block; font-weight: 600; margin-bottom: 6px; }
+.field > small { display: block; margin-top: 6px; }
+
+.input {
+  width: 100%;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  min-height: 44px;
+  outline: none;
+}
+.input:focus { border-color: var(--primary); }
+
+select.input { appearance: none; }
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.btn-ghost-primary {
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+
+.sep { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
+
+/* ---------------- Device list ---------------- */
+.device-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 80px;
+  display: grid;
+  gap: 8px;
+}
+.device-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.device-item input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+}
+.device-main { flex: 1; min-width: 0; }
+.device-main .name { font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.device-main .meta { color: var(--muted); font-size: .85rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.device-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.device-badge {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: .75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.device-badge.badge-pending {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+.device-badge.badge-ok {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: var(--success);
+  color: var(--success);
+}
+.device-badge.badge-err {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ---------------- Help panel ---------------- */
+.help h2 { margin: 4px 0 12px; font-size: 1.25rem; }
+.help h3 { margin: 20px 0 8px; font-size: 1rem; color: var(--text); }
+.help p, .help li { color: var(--muted); line-height: 1.5; }
+.help ol, .help ul { padding-left: 20px; margin: 0 0 8px; }
+.help li { margin-bottom: 6px; }
+.help strong { color: var(--text); }
+.help a { color: var(--primary); }
+.help .ok { color: var(--success); }
+.badge-inline {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: .75rem;
+  white-space: nowrap;
+}
+.badge-inline.badge-pending {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+.device-item.selected { border-color: var(--primary); }
+
+/* ---------------- Bulk bar ---------------- */
+.bulk-bar {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(env(safe-area-inset-bottom) + 12px);
+  background: var(--surface);
+  border: 1px solid var(--primary);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  z-index: 20;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* ---------------- Modal ---------------- */
+[hidden] { display: none !important; }
+.modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  display: none;
+  align-items: flex-end; justify-content: center;
+  padding: 12px;
+  z-index: 30;
+}
+.modal.open { display: flex; }
+.modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%; max-width: 620px;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 16px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+}
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.modal-head h2 { margin: 0; font-size: 1.1rem; }
+.icon-btn {
+  background: transparent; border: 0; color: var(--muted);
+  font-size: 1.2rem; cursor: pointer; width: 36px; height: 36px;
+}
+
+/* ---------------- Progress ---------------- */
+.progress-list { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }
+.progress-list li {
+  display: flex; justify-content: space-between; gap: 10px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  padding: 8px 10px; border-radius: 8px;
+  font-size: .9rem;
+}
+.progress-list .ok { color: var(--success); }
+.progress-list .err { color: var(--danger); }
+.progress-list .pending { color: var(--warning); }
+
+/* ---------------- Status hint ---------------- */
+.hint.err { color: var(--danger); }
+.hint.ok { color: var(--success); }
+
+@media (min-width: 480px) {
+  .modal { align-items: center; }
 }

@@ -1,10 +1,12 @@
 // Service Worker minimalista con cache precarga + estrategia "cache first, red de respaldo".
-const CACHE = 'mipwa-v1';
+const CACHE = 'kio-setup-v9';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './api.js',
+  './ble.js',
   './manifest.webmanifest',
   './icons/icon.svg',
   './icons/icon-maskable.svg'

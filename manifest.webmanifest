@@ -1,7 +1,7 @@
 {
-  "name": "Mi PWA",
-  "short_name": "MiPWA",
-  "description": "Plantilla mínima de PWA instalable en Android.",
+  "name": "Kio Setup",
+  "short_name": "Kio Setup",
+  "description": "Configura beacons Kontakt por lote vía Kio Cloud API.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

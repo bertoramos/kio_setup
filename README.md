@@ -1,20 +1,68 @@
-# Mi PWA — plantilla mínima
+# Kio Setup
 
-Página web (HTML + JS vanilla) instalable como PWA en Android.
+PWA (HTML + JS vanilla) para configurar beacons **Kontakt.io** por lote usando la **Kio Cloud API**. Instalable en Android.
+
+## Qué hace
+
+- Lista los beacons de tu cuenta Kontakt.
+- Selección múltiple y aplicación en lote de:
+  - **TX Power** (0–7, mínimo a máximo)
+  - **Intervalo de anuncio** en ms
+- Escaneo **BLE local** con Web Bluetooth para verificar dispositivos cercanos.
+- 100 % gratuito, sin servidor (opcional: proxy Cloudflare Worker gratis si CORS bloquea).
+
+## Cómo funciona la configuración
+
+Kontakt aplica la config en dos pasos:
+
+1. Esta app llama a la **Kio Cloud API** y guarda tu "desired configuration" en la nube.
+2. El beacon físico recibe la config la próxima vez que un **gateway Kontakt** o la **app móvil oficial Kio Setup** está cerca de él.
+
+Por eso, después de aplicar cambios aquí, abre la app oficial cerca de los beacons (o espera al gateway) para que lleguen al hardware.
+
+## Requisitos
+
+- Cuenta Kontakt.io con **API Key** (genera una en [panel.kontakt.io](https://panel.kontakt.io) → My Account → API Keys).
+- Chrome Android para instalar como PWA y para el escaneo BLE.
 
 ## Estructura
 
 ```
 .
-├── index.html
+├── index.html           # UI (3 pestañas)
 ├── styles.css
-├── app.js
+├── app.js               # Lógica de UI y estado
+├── api.js               # Cliente Kio Cloud API
+├── ble.js               # Wrapper Web Bluetooth
 ├── manifest.webmanifest
-├── sw.js
+├── sw.js                # Service Worker (app shell)
+├── cloudflare-worker.js # (Opcional) proxy CORS gratis
 └── icons/
     ├── icon.svg
     └── icon-maskable.svg
 ```
+
+## Uso
+
+1. Abre la PWA (en local o vía GitHub Pages).
+2. Ve a **Ajustes**, pega tu **API Key** y pulsa **Probar conexión**.
+   - Si ves `✔ Conexión OK` → ya puedes usar la app.
+   - Si ves un error tipo `Error de red o CORS` → la API de Kontakt no permite llamadas directas desde el navegador. Monta el Cloudflare Worker (ver sección más abajo) y pon su URL en **Base URL**.
+3. Ve a **Beacons** → **Refrescar**. Aparecerán tus beacons.
+4. Marca varios, pulsa **Configurar** en la barra inferior, elige TX Power y/o intervalo, **Aplicar**.
+5. Pestaña **Scan BLE** → **Escanear BLE**: muestra el selector del sistema con beacons cercanos (útil una vez los tengas físicamente).
+
+## (Opcional) Proxy gratis con Cloudflare Worker
+
+Si `api.kontakt.io` rechaza las llamadas del navegador por CORS:
+
+1. Abre [dash.cloudflare.com](https://dash.cloudflare.com) (cuenta gratis).
+2. **Workers & Pages** → **Create** → **Worker** → dale un nombre (p.ej. `kio-proxy`).
+3. **Edit code** → borra el ejemplo y pega el contenido de `cloudflare-worker.js`.
+4. **Save and Deploy**. Te da una URL tipo `https://kio-proxy.TU_USER.workers.dev`.
+5. En la app, **Ajustes → Base URL**: pega esa URL y guarda.
+
+La API Key se sigue enviando solo desde tu cliente; el worker solo añade cabeceras CORS y reenvía.
 
 ## Cómo probarlo
 
