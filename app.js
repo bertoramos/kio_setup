@@ -360,40 +360,141 @@ document.getElementById('cfg-apply').addEventListener('click', async () => {
 // ======= BLE =======
 const bleList = document.getElementById('ble-list');
 const bleStatus = document.getElementById('ble-status');
-const bleScanBtn = document.getElementById('ble-scan');
+const bleScanLiveBtn = document.getElementById('ble-scan-live');
+const bleScanStopBtn = document.getElementById('ble-scan-stop');
+const bleScanPickerBtn = document.getElementById('ble-scan-picker');
+const bleCountEl = document.getElementById('ble-count');
+const bleLeScanWarn = document.getElementById('ble-lescan-warn');
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 if (!Ble.isSupported()) {
   bleStatus.className = 'hint err';
-  bleStatus.textContent = 'Web Bluetooth no soportado. Usa Chrome Android sobre HTTPS.';
-  bleScanBtn.disabled = true;
+  bleStatus.textContent = 'Web Bluetooth no soportado. Usa Chrome Android o escritorio con Bluetooth sobre HTTPS.';
+  bleScanLiveBtn.disabled = true;
+  bleScanPickerBtn.disabled = true;
+} else if (!Ble.supportsLEScan()) {
+  bleLeScanWarn.hidden = false;
 }
 
-bleScanBtn.addEventListener('click', async () => {
+// Mapa de advertisements recibidos: id -> { name, rssi, lastSeen, iBeacon, eddystone, mac }
+const bleSeen = new Map();
+let bleScanHandle = null;
+
+function renderBleList() {
+  bleCountEl.textContent = bleSeen.size ? `${bleSeen.size} dispositivo${bleSeen.size === 1 ? '' : 's'}` : '';
+  // Ordena por RSSI descendente (más fuerte primero).
+  const items = Array.from(bleSeen.values()).sort((a, b) => (b.rssi ?? -999) - (a.rssi ?? -999));
+  bleList.innerHTML = '';
+  for (const d of items) {
+    const li = document.createElement('li');
+    li.className = 'device-item';
+    const main = document.createElement('div');
+    main.className = 'device-main';
+    const metaBits = [];
+    if (d.mac) metaBits.push(d.mac);
+    if (d.id && !d.mac) metaBits.push(d.id.slice(0, 12) + '…');
+    if (d.rssi != null) metaBits.push(`RSSI ${d.rssi} dBm`);
+    main.innerHTML = `
+      <span class="name">${escapeHtml(d.name || '(sin nombre)')}</span>
+      <span class="meta">${escapeHtml(metaBits.join(' · '))}</span>
+    `;
+    if (d.iBeacon) {
+      const sub = document.createElement('span');
+      sub.className = 'meta';
+      sub.textContent = `iBeacon: ${d.iBeacon.uuid} · major ${d.iBeacon.major} · minor ${d.iBeacon.minor}`;
+      main.appendChild(sub);
+    }
+    if (d.eddystone) {
+      const sub = document.createElement('span');
+      sub.className = 'meta';
+      if (d.eddystone.type === 'UID') sub.textContent = `Eddystone UID: ${d.eddystone.namespace} / ${d.eddystone.instance}`;
+      else if (d.eddystone.type === 'URL') sub.textContent = `Eddystone URL: ${d.eddystone.url}`;
+      else sub.textContent = `Eddystone ${d.eddystone.type}`;
+      main.appendChild(sub);
+    }
+    li.appendChild(main);
+    bleList.appendChild(li);
+  }
+}
+
+function onAdvertisement(ev) {
+  const id = ev.device.id;
+  const prev = bleSeen.get(id) || {};
+  const ibeacon = Ble.parseIBeacon(ev.manufacturerData);
+  const eddy = Ble.parseEddystone(ev.serviceData);
+  bleSeen.set(id, {
+    id,
+    name: ev.device.name || prev.name || '',
+    rssi: ev.rssi ?? prev.rssi,
+    lastSeen: Date.now(),
+    iBeacon: ibeacon || prev.iBeacon || null,
+    eddystone: eddy || prev.eddystone || null,
+    mac: prev.mac || null,
+  });
+  // Throttle del render: como máximo 4 repintados/s.
+  scheduleBleRender();
+}
+
+let bleRenderPending = false;
+function scheduleBleRender() {
+  if (bleRenderPending) return;
+  bleRenderPending = true;
+  setTimeout(() => { bleRenderPending = false; renderBleList(); }, 250);
+}
+
+bleScanLiveBtn.addEventListener('click', async () => {
+  if (!Ble.supportsLEScan()) {
+    bleStatus.className = 'hint err';
+    bleStatus.textContent = 'requestLEScan no disponible. Mira el aviso de arriba.';
+    return;
+  }
+  bleStatus.className = 'hint';
+  bleStatus.textContent = 'Pidiendo permiso de escaneo…';
+  try {
+    bleScanHandle = await Ble.startLEScan(onAdvertisement);
+    bleStatus.className = 'hint ok';
+    bleStatus.textContent = 'Escaneando en vivo… (toca Detener para parar)';
+    bleScanLiveBtn.hidden = true;
+    bleScanStopBtn.hidden = false;
+  } catch (err) {
+    bleStatus.className = 'hint err';
+    bleStatus.textContent = err.message || 'Error iniciando escaneo';
+  }
+});
+
+bleScanStopBtn.addEventListener('click', () => {
+  if (bleScanHandle) { bleScanHandle.stop(); bleScanHandle = null; }
+  bleScanLiveBtn.hidden = false;
+  bleScanStopBtn.hidden = true;
+  bleStatus.className = 'hint';
+  bleStatus.textContent = 'Escaneo detenido.';
+});
+
+bleScanPickerBtn.addEventListener('click', async () => {
   bleStatus.className = 'hint';
   bleStatus.textContent = 'Abriendo selector del sistema…';
   try {
     const dev = await Ble.pickDevice();
     bleStatus.textContent = '';
-    const li = document.createElement('li');
-    li.className = 'device-item';
-    li.innerHTML = `<div class="device-main"><span class="name">${dev.name}</span><span class="meta">${dev.id}</span></div>`;
-    bleList.prepend(li);
+    bleSeen.set(dev.id, { id: dev.id, name: dev.name, rssi: null, lastSeen: Date.now() });
+    renderBleList();
   } catch (err) {
     bleStatus.className = 'hint err';
     bleStatus.textContent = err.message || 'Cancelado';
   }
 });
 
-// Carga inicial: ya emparejados (si el navegador lo soporta)
-(async () => {
-  const paired = await Ble.listPaired();
-  for (const dev of paired) {
-    const li = document.createElement('li');
-    li.className = 'device-item';
-    li.innerHTML = `<div class="device-main"><span class="name">${dev.name}</span><span class="meta">${dev.id} · emparejado</span></div>`;
-    bleList.appendChild(li);
+// Detener escaneo si el usuario cambia de pestaña o cierra.
+window.addEventListener('visibilitychange', () => {
+  if (document.hidden && bleScanHandle) {
+    bleScanHandle.stop();
+    bleScanHandle = null;
+    bleScanLiveBtn.hidden = false;
+    bleScanStopBtn.hidden = true;
+    bleStatus.textContent = 'Escaneo detenido (pestaña inactiva).';
   }
-})();
+});
 
 // ======= Arranque =======
 if (Kontakt.getConfig().apiKey) {

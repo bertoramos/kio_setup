@@ -236,6 +236,7 @@ select.input { appearance: none; }
 .device-main { flex: 1; min-width: 0; }
 .device-main .name { font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .device-main .meta { color: var(--muted); font-size: .85rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hint.ok { color: var(--success); }
 .device-badges {
   display: flex;
   flex-direction: column;

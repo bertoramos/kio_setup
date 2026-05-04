@@ -46,8 +46,15 @@
 
     <!-- ================= SCAN BLE ================= -->
     <section class="tab-panel" data-panel="ble" hidden>
-      <p class="hint">Escaneo con Web Bluetooth. Requiere Chrome Android sobre HTTPS. El navegador abrirá su selector del sistema con los dispositivos BLE cercanos.</p>
-      <button id="ble-scan" class="btn">Escanear BLE</button>
+      <div class="toolbar">
+        <button id="ble-scan-live" class="btn">Escaneo en vivo</button>
+        <button id="ble-scan-stop" class="btn" hidden>Detener</button>
+        <button id="ble-scan-picker" class="btn">Selector del sistema</button>
+        <span id="ble-count" class="muted"></span>
+      </div>
+      <p id="ble-lescan-warn" class="hint" hidden>
+        ⚠ Tu navegador no soporta escaneo en vivo. Activa <code>chrome://flags/#enable-experimental-web-platform-features</code> en Chrome Android y reinícialo. En iOS Safari no es posible.
+      </p>
       <div id="ble-status" class="hint"></div>
       <ul id="ble-list" class="device-list"></ul>
     </section>
