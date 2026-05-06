@@ -333,14 +333,24 @@ document.getElementById('cfg-apply').addEventListener('click', async () => {
     status.textContent = 'enviando…';
     try {
       const dev = state.devices.find((d) => d.uniqueId === id);
+      // Usar el deviceType que venga de la API, o BEACON como default (funciona para la mayoría).
+      // No inferimos por modelo para evitar asignar tipos incorrectos que den 422.
       const deviceType = (dev && dev.deviceType) || 'BEACON';
+      console.log(`Configurando ${id}: deviceType=${deviceType}, txPower=${txPower}, interval=${interval}`);
       await Kontakt.setDeviceConfig(id, { txPower, interval, deviceType });
       status.className = 'ok';
       status.textContent = '✔ enviado';
       okCount++;
     } catch (err) {
       status.className = 'err';
-      status.textContent = '✖ ' + (err.message || 'error');
+      // Si es error 422 de validación, intentamos mostrar detalle del campo
+      let msg = err.message || 'error';
+      if (err.status === 422 && err.data && Array.isArray(err.data.details)) {
+        const fields = err.data.details.map(d => `${d.field}: ${d.message || d.error}`).join('; ');
+        msg = `Validation: ${fields}`;
+        console.error('Validation failed for', id, err.data.details);
+      }
+      status.textContent = '✖ ' + msg;
       errCount++;
     }
   }

@@ -65,11 +65,10 @@ const Kontakt = (() => {
     }
 
     if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || res.statusText || 'Error';
-      const e = new Error(`HTTP ${res.status}: ${msg}`);
-      e.status = res.status;
-      e.data = data;
-      throw e;
+      const err = new Error(`HTTP ${res.status}: ${data && data.message ? data.message : text || res.statusText}`);
+      err.status = res.status;
+      err.data = data; // adjuntar body completo para inspección de detalles de validación
+      throw err;
     }
     return data;
   }
