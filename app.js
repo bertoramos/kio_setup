@@ -332,7 +332,9 @@ document.getElementById('cfg-apply').addEventListener('click', async () => {
     const status = li.querySelector('span:last-child');
     status.textContent = 'enviando…';
     try {
-      await Kontakt.setDeviceConfig(id, { txPower, interval });
+      const dev = state.devices.find((d) => d.uniqueId === id);
+      const deviceType = (dev && dev.deviceType) || 'BEACON';
+      await Kontakt.setDeviceConfig(id, { txPower, interval, deviceType });
       status.className = 'ok';
       status.textContent = '✔ enviado';
       okCount++;

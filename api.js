@@ -90,15 +90,19 @@ const Kontakt = (() => {
     return await request(`/config/${encodeURIComponent(uniqueId)}`);
   }
 
-  // Actualiza la config deseada. La API aplica lo que se envíe; lo no enviado se conserva.
-  // Endpoint oficial: POST /device/update (form-urlencoded, incluye uniqueId).
+  // Crea una *pending configuration* que la app Kio Setup Manager (o un gateway)
+  // entregará al beacon al próximo sync BLE.
+  // Endpoint: POST /config/create (form-urlencoded, incluye uniqueId).
+  // OJO: NO usar /device/update — eso solo actualiza metadatos del registro en la
+  // nube y no encola nada que el SDK pueda sincronizar al hardware.
   // Docs: https://docs.kontakt.io/hardware/configuration/
-  async function setDeviceConfig(uniqueId, { txPower, interval } = {}) {
+  async function setDeviceConfig(uniqueId, { txPower, interval, deviceType = 'BEACON' } = {}) {
     const form = new URLSearchParams();
     form.set('uniqueId', uniqueId);
+    form.set('deviceType', deviceType);
     if (txPower !== undefined && txPower !== '' && txPower !== null) form.set('txPower', String(txPower));
     if (interval !== undefined && interval !== '' && interval !== null) form.set('interval', String(interval));
-    return await request('/device/update', { method: 'POST', body: form });
+    return await request('/config/create', { method: 'POST', body: form });
   }
 
   // Test simple: pide 1 device para validar API Key + CORS.
