@@ -105,24 +105,37 @@
         <li>Pestaña <strong>Beacons</strong> → <strong>Refrescar</strong>. Aparece tu inventario.</li>
         <li>Marca los checkboxes de los beacons que quieras cambiar.</li>
         <li>Pulsa <strong>Configurar</strong> en la barra inferior.</li>
-        <li>Elige <strong>TX Power</strong> (0 = mínimo, 7 = máximo) y/o <strong>Intervalo</strong> (ms).</li>
+        <li>Elige <strong>TX Power</strong> (1 = mínimo, 7 = máximo) y/o <strong>Intervalo</strong> (ms).</li>
         <li><strong>Aplicar a seleccionados</strong>. Verás progreso por beacon.</li>
       </ol>
 
-      <h3>3. Sincronizar con los beacons físicos</h3>
-      <p>Después de aplicar cambios verás el badge <span class="badge-inline badge-pending">⏳ Pendiente sync</span>. Eso quiere decir que la nube ya tiene tu nueva config, pero el beacon todavía no la ha recibido. Hay dos formas de que llegue al hardware:</p>
+      <h3>3. Sincronizar con los beacons físicos (PASO OBLIGATORIO)</h3>
+      <p><strong>⚠️ Importante:</strong> Esta PWA solo configura la <em>nube</em>. Los beacons físicos no están conectados a Internet: solo emiten señales BLE. Para recibir la nueva configuración, necesitan que un dispositivo se conecte a ellos vía Bluetooth y les transfiera los cambios.</p>
+
+      <h4>Flujo completo de configuración</h4>
+      <ol>
+        <li><strong>Paso 1 - Configuración remota (esta PWA):</strong> Seleccionas beacons, eliges TX Power/Intervalo, y pulsas aplicar. Esto encola los cambios en la nube de Kontakt. Verás <span class="badge-inline badge-pending">⏳ Pendiente sync</span>.</li>
+        <li><strong>Paso 2 - Sincronización física (obligatoria):</strong> Abres la app oficial <strong>Kio Setup Manager</strong> en Android/iOS, te acercas a cada beacon, y pulsas "Apply configuration" (o esperas a que el app lo detecte y lo haga automáticamente). La app se conecta por BLE, autentica con el protocolo propietario de Kontakt, y transfiere la configuración pendiente.</li>
+        <li><strong>Resultado:</strong> El beacon actualiza su firmware interno, empieza a emitir con los nuevos valores, y la nube marca el sync como completado.</li>
+      </ol>
+
+      <h4>¿Por qué no puedo hacerlo todo desde esta PWA?</h4>
+      <p>Los beacons no tienen WiFi/4G. El navegador web (incluso con Web Bluetooth) <strong>no puede hablar el protocolo propietario</strong> que Kontakt usa para autenticar y flashear configuración en el beacon. Ese protocolo solo está implementado en las apps nativas oficiales de Kontakt.</p>
+
+      <h4>Métodos de sincronización física</h4>
       <ul>
-        <li><strong>App oficial Kio Setup (Android/iOS)</strong>: ábrela cerca de los beacons. Se conecta a ellos por Bluetooth y empuja la config descargada de la nube. Es la opción más habitual sin infraestructura.</li>
-        <li><strong>Gateway Kontakt (Portal Light)</strong>: si tienes uno desplegado, sincroniza solo cuando el beacon esté en su rango.</li>
+        <li><strong>App oficial Kio Setup Manager (Android/iOS)</strong>: el método estándar. Ve beacon por beacon (o usa "Apply All" si están todos al alcance), autentica, y aplica los cambios encolados en la nube. Es manual pero funciona sin infraestructura adicional.</li>
+        <li><strong>Gateway Kontakt (Portal Light, Portal Beam)</strong>: si tienes gateways desplegados cerca de los beacons, estos pueden hacer el sync automáticamente cuando el beacon entra en su rango. Requiere comprar y desplegar hardware adicional.</li>
       </ul>
-      <p>Cuando la sincronización se completa, el beacon empieza a emitir con la nueva config y en la siguiente <strong>Refrescar</strong> el badge <span class="badge-inline badge-pending">⏳ Pendiente sync</span> desaparecerá.</p>
+
+      <p>Cuando la sincronización se completa, en la siguiente <strong>Refrescar</strong> de esta PWA el badge <span class="badge-inline badge-pending">⏳ Pendiente sync</span> desaparecerá.</p>
 
       <h3>4. Escaneo BLE local</h3>
       <p>La pestaña <strong>BLE</strong> usa Web Bluetooth de Chrome Android para listar dispositivos BLE cercanos (requiere HTTPS y estar cerca del beacon). Sirve para verificar que un beacon está emitiendo y ver su nombre/ID, no para configurarlo.</p>
 
       <h3>Qué significa cada valor</h3>
       <ul>
-        <li><strong>TX Power</strong>: potencia de transmisión. Más bajo = menos alcance, más batería. Más alto = más alcance, menos batería. Escala 0–7 (el mapeo a dBm depende del modelo).</li>
+        <li><strong>TX Power</strong>: potencia de transmisión (1–7). Más bajo = menos alcance, más batería. Más alto = más alcance, menos batería. El valor 0 puede no ser válido en algunos modelos (causa error 422). El mapeo exacto a dBm depende del modelo.</li>
         <li><strong>Intervalo</strong>: cada cuánto emite (en ms). Rango típico 100–10240 ms. Más alto = menos consumo, pero detección más lenta.</li>
         <li><strong>TX x</strong> y <strong>xxx ms</strong> en la línea gris: es la config <em>actual según la nube</em>, no lo que está emitiendo el beacon físico si hay un <span class="badge-inline badge-pending">⏳ Pendiente sync</span>.</li>
       </ul>
@@ -146,19 +159,18 @@
         <p id="config-target" class="muted"></p>
 
         <label class="field">
-          <span>TX Power</span>
+          <span>TX Power (1-7)</span>
           <select id="cfg-txpower" class="input">
             <option value="">— sin cambios —</option>
-            <option value="0">0 (~ -30 dBm, mínimo)</option>
-            <option value="1">1 (~ -20 dBm)</option>
+            <option value="1">1 (~ -20 dBm, mínimo)</option>
             <option value="2">2 (~ -16 dBm)</option>
             <option value="3">3 (~ -12 dBm)</option>
             <option value="4">4 (~ -8 dBm)</option>
             <option value="5">5 (~ -4 dBm)</option>
             <option value="6">6 (~ 0 dBm)</option>
-            <option value="7">7 (~ +4 dBm, máximo)</option>
+            <option value="7">7 (~ 4 dBm, máximo)</option>
           </select>
-          <small class="muted">El mapeo exacto a dBm depende del modelo de beacon.</small>
+          <small class="muted">Algunos modelos no aceptan 0. Usa 1-7. Dejar vacío para no cambiar.</small>
         </label>
 
         <label class="field">

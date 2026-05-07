@@ -304,10 +304,15 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.getElementById('cfg-apply').addEventListener('click', async () => {
-  const txPower = cfgTxPower.value;
-  const interval = cfgInterval.value;
-  if (txPower === '' && interval === '') {
+  const txPower = cfgTxPower.value === '' ? undefined : Number(cfgTxPower.value);
+  const interval = cfgInterval.value === '' ? undefined : Number(cfgInterval.value);
+  if ((txPower === undefined || Number.isNaN(txPower)) && (interval === undefined || Number.isNaN(interval))) {
     alert('Elige al menos TX power o intervalo.');
+    return;
+  }
+  // Validar rango txPower según mensaje de error de la API: 1-7 (no 0)
+  if (txPower !== undefined && (txPower < 1 || txPower > 7 || !Number.isInteger(txPower))) {
+    alert('TX Power debe ser un entero entre 1 y 7 (1 = -20 dBm, 7 = 4 dBm). El valor 0 no es válido para todos los modelos.');
     return;
   }
   const ids = pendingIds.slice();

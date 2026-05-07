@@ -1,5 +1,5 @@
 // Service Worker minimalista con cache precarga + estrategia "cache first, red de respaldo".
-const CACHE = 'kio-setup-v18';
+const CACHE = 'kio-setup-v21';
 const ASSETS = [
   './',
   './index.html',
